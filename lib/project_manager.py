@@ -22,9 +22,12 @@ def save_projects(projects):
 # Create a new project
 def create_project(projects):
     name = input("Enter the name of the new project: ")
-    projects[name] = {"active": False}
+    for project in projects:
+        projects[project]["active"] = False
+    projects[name] = {"active": True}
+    
+    print(f"Created project: {name} and set it as active.")
     save_projects(projects)
-    print(f"Created project: {name}")
 
 # Set the active project
 def set_active_project(projects):

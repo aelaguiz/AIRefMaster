@@ -69,3 +69,39 @@ def list_project_files(config, active_project):
                 print(f"{file_info['name']} ({file_info['id']}) from account {account_name}")
             except Exception as e:
                 print(f"Could not retrieve file {file_id} from account {account_name}: {e}")
+
+
+def list_recent_files_and_add_to_project(config, project, projects):
+    account_name = select_account_by_number(config)
+
+    credentials = get_credentials(account_name, config)
+    service = get_service(credentials)
+
+    results = service.files().list(orderBy="modifiedTime desc", pageSize=10, fields="files(id, name, mimeType)").execute()
+    items = results.get('files', [])
+
+    if not items:
+        print("No files found.")
+        return
+
+    existing_file_ids = {file['id']: True for file in project.get('files', [])}
+
+    print("10 most recently modified files:")
+    for i, item in enumerate(items, 1):
+        already_added = " (Already in project)" if item['id'] in existing_file_ids else ""
+        print(f"{i}. {item['name']} ({item['id']}){already_added}")
+
+    if 'files' not in project:
+        project['files'] = []
+
+    selection = input("Enter the numbers of the files to add to the project, separated by commas: ").split(',')
+    for s in selection:
+        index = int(s.strip()) - 1
+        file_info = {
+            'id': items[index]['id'],
+            'mimeType': items[index]['mimeType'],
+            'account': account_name
+        }
+        project['files'].append(file_info)
+
+    save_projects(projects)  # Save the updated project information

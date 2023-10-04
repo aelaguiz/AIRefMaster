@@ -3,7 +3,7 @@ from datetime import datetime
 from lib.google_drive_api import list_accounts, get_credentials, get_service, select_account_by_number
 from lib.project_manager import load_config, load_projects, save_projects, create_project, set_active_project
 from lib.context_generator import generate_ai_context
-from lib.project_files import list_project_files, search_and_add_files_to_project
+from lib.project_files import list_project_files, search_and_add_files_to_project, list_recent_files_and_add_to_project
 from lib.pdf import text_to_pdf
 
 from lib.s3 import upload_to_s3, load_s3_config, test_s3
@@ -25,10 +25,11 @@ if __name__ == '__main__':
         print("3 - Create a new project")
         print("4 - Set an active project")
         print("5 - List all files in the current project")
-        print("6 - Search for files to add to the current project")
-        print("7 - Generate AI context from current project")
-        print("8 - Test S3 Upload/Download")
-        print("9 - Exit")
+        print("6 - List 10 most recently modified google files")
+        print("7 - Search for files to add to the current project")
+        print("8 - Generate AI context from current project")
+        print("9 - Test S3 Upload/Download")
+        print("10 - Exit")
 
         
         choice = input(prompt)
@@ -43,6 +44,7 @@ if __name__ == '__main__':
                 print(f"Authenticated to {account_name}")
         elif choice == "3":
             create_project(projects)
+            active_project = [proj for proj, data in projects.items() if data.get("active")]
         elif choice == "4":
             set_active_project(projects)
             active_project = [proj for proj, data in projects.items() if data.get("active")]
@@ -55,8 +57,13 @@ if __name__ == '__main__':
             if not active_project:
                 print("No active project. Set a project active first.")
             else:
-                search_and_add_files_to_project(config, projects[active_project[0]], projects)
+                list_recent_files_and_add_to_project(config, projects[active_project[0]], projects)
         elif choice == "7":
+            if not active_project:
+                print("No active project. Set a project active first.")
+            else:
+                search_and_add_files_to_project(config, projects[active_project[0]], projects)
+        elif choice == "8":
             if not active_project:
                 print("No active project. Set a project active first.")
             else:
@@ -94,8 +101,8 @@ if __name__ == '__main__':
                         break
                     else:
                         print("Invalid choice. Try again.")
-        elif choice == "8":
-            test_s3()
         elif choice == "9":
+            test_s3()
+        elif choice == "10":
             break
 
