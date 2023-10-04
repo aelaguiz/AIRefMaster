@@ -1,50 +1,30 @@
 from googleapiclient.http import MediaIoBaseDownload
 from io import BytesIO
-from .google_drive_api import get_credentials, get_service
+from .google_drive_api import get_credentials, get_service, fetch_file_content_and_metadata
 
 
-# Generate a flat text file containing all files' data in the project
 def generate_ai_context(config, project):
     flat_file_content = ""
-
-    # Create an empty list to hold file metadata and content
     file_metadata_content_list = []
-
+    
     for file_info in project['files']:
         file_id = file_info['id']
-        mime_type = file_info['mimeType']
+        mime_type = file_info['mimeType']  # Using mimeType from project's file_info
         account_name = file_info['account']
 
         print(f"Fetching file {file_id} from {account_name}...")
         
-        credentials = get_credentials(account_name, config)
-        service = get_service(credentials)
+        additional_metadata, content = fetch_file_content_and_metadata(file_id, account_name, config, mime_type)
 
-        # Fetch additional metadata (modifiedTime, owners, lastModifyingUser)
-        additional_metadata = service.files().get(fileId=file_id, fields='modifiedTime,owners,lastModifyingUser').execute()
-
-        content = ""
-        if "google-apps.document" in mime_type:
-            # Handle Google Docs
-            content = service.files().export(fileId=file_id, mimeType='text/plain').execute()
-            content = content.decode('utf-8')
-
-        elif "google-apps.presentation" in mime_type:
-            # Handle Google Slides (For simplicity, fetching only slide titles)
-            content = service.files().export(fileId=file_id, mimeType='text/plain').execute()
-            content = content.decode('utf-8')
-            # presentation = service.presentations().get(presentationId=file_id).execute()
-            # slides = presentation.get('slides', [])
-            # slide_titles = [slide.get('slideProperties', {}).get('title', 'Untitled slide') for slide in slides]
-            # content = ' | '.join(slide_titles)
-
-        # Store metadata and content in a dictionary, then add to list
         file_metadata_content_list.append({
             'metadata': additional_metadata,
             'content': content,
-            'mime_type': mime_type,
+            'mime_type': mime_type,  # Using mimeType from project's file_info
             'file_id': file_id
         })
+        
+    # ... (rest of the function remains the same)
+
 
     # Sort list by modifiedTime
     file_metadata_content_list.sort(key=lambda x: x['metadata'].get('modifiedTime', ''))

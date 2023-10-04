@@ -10,6 +10,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
 # Get the Google API credentials for a given account
 def get_credentials(account_name, config):
+    print(f"Getting credentials for {account_name}...")
     creds = None
     credentials_file = config["google"][account_name]["credentials_file"]
     token_file = f"{account_name}_token.pickle"
@@ -53,3 +54,21 @@ def select_account_by_number(config):
     else:
         print("Invalid selection.")
         return None
+
+
+# Add mime_type as a parameter
+def fetch_file_content_and_metadata(file_id, account_name, config, mime_type):
+    credentials = get_credentials(account_name, config)
+    service = get_service(credentials)
+    
+    additional_metadata = service.files().get(fileId=file_id, fields='modifiedTime,owners,lastModifyingUser').execute()
+    
+    content = ""
+    if "google-apps.document" in mime_type:
+        content = service.files().export(fileId=file_id, mimeType='text/plain').execute()
+        content = content.decode('utf-8')
+    elif "google-apps.presentation" in mime_type:
+        content = service.files().export(fileId=file_id, mimeType='text/plain').execute()
+        content = content.decode('utf-8')
+        
+    return additional_metadata, content
