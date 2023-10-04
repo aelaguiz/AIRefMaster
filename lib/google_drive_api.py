@@ -11,7 +11,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 # Get the Google API credentials for a given account
 def get_credentials(account_name, config):
     creds = None
-    credentials_file = config[account_name]["credentials_file"]
+    credentials_file = config["google"][account_name]["credentials_file"]
     token_file = f"{account_name}_token.pickle"
 
     if os.path.exists(token_file):
@@ -36,7 +36,7 @@ def get_service(credentials):
 
 # List all accounts and their authentication status
 def list_accounts(config):
-    for account in config.keys():
+    for account in config["google"].keys():
         token_file = f"{account}_token.pickle"
         status = "Authenticated" if os.path.exists(token_file) else "Not Authenticated"
         print(f"{account} - {status}")

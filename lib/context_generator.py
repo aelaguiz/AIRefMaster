@@ -64,3 +64,4 @@ def generate_ai_context(config, project):
             flat_file_content += f"{content}\n---\n"
 
     print(flat_file_content)
+    return flat_file_content
