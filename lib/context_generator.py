@@ -1,13 +1,14 @@
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from googleapiclient.http import MediaIoBaseDownload
 from io import BytesIO
 from .google_drive_api import get_credentials, get_service, fetch_file_content_and_metadata
-
 
 def generate_ai_context(config, project):
     flat_file_content = ""
     file_metadata_content_list = []
     
-    for file_info in project['files']:
+    def fetch_file(file_info):
         file_id = file_info['id']
         mime_type = file_info['mimeType']  # Using mimeType from project's file_info
         account_name = file_info['account']
@@ -16,15 +17,16 @@ def generate_ai_context(config, project):
         
         additional_metadata, content = fetch_file_content_and_metadata(file_id, account_name, config, mime_type)
 
-        file_metadata_content_list.append({
+        return {
             'metadata': additional_metadata,
             'content': content,
-            'mime_type': mime_type,  # Using mimeType from project's file_info
+            'mime_type': mime_type,
             'file_id': file_id
-        })
-        
-    # ... (rest of the function remains the same)
-
+        }
+    
+    # Create a thread pool and map fetch_file to each file_info
+    with ThreadPoolExecutor() as executor:
+        file_metadata_content_list = list(executor.map(fetch_file, project['files']))
 
     # Sort list by modifiedTime
     file_metadata_content_list.sort(key=lambda x: x['metadata'].get('modifiedTime', ''))

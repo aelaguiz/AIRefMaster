@@ -32,7 +32,7 @@ def text_to_pdf(base_text, chunk_size=4096):
 
     try:
         while offset < text_length:
-            print(f"Processing chunk starting at offset {offset}")
+            # print(f"Processing chunk starting at offset {offset}")
             # Get the next chunk
             chunk = base_text[offset:offset + chunk_size]
             chunk = chunk.replace("<", "&lt;")

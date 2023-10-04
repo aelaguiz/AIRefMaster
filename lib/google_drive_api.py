@@ -61,6 +61,7 @@ def fetch_file_content_and_metadata(file_id, account_name, config, mime_type):
     credentials = get_credentials(account_name, config)
     service = get_service(credentials)
     
+    print("Fetching file content and metadata...")
     additional_metadata = service.files().get(fileId=file_id, fields='modifiedTime,owners,lastModifyingUser').execute()
     
     content = ""
