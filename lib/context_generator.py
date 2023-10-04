@@ -14,6 +14,8 @@ def generate_ai_context(config, project):
         file_id = file_info['id']
         mime_type = file_info['mimeType']
         account_name = file_info['account']
+
+        print(f"Fetching file {file_id} from {account_name}...")
         
         credentials = get_credentials(account_name, config)
         service = get_service(credentials)
@@ -29,10 +31,12 @@ def generate_ai_context(config, project):
 
         elif "google-apps.presentation" in mime_type:
             # Handle Google Slides (For simplicity, fetching only slide titles)
-            presentation = service.presentations().get(presentationId=file_id).execute()
-            slides = presentation.get('slides', [])
-            slide_titles = [slide.get('slideProperties', {}).get('title', 'Untitled slide') for slide in slides]
-            content = ' | '.join(slide_titles)
+            content = service.files().export(fileId=file_id, mimeType='text/plain').execute()
+            content = content.decode('utf-8')
+            # presentation = service.presentations().get(presentationId=file_id).execute()
+            # slides = presentation.get('slides', [])
+            # slide_titles = [slide.get('slideProperties', {}).get('title', 'Untitled slide') for slide in slides]
+            # content = ' | '.join(slide_titles)
 
         # Store metadata and content in a dictionary, then add to list
         file_metadata_content_list.append({
@@ -56,7 +60,7 @@ def generate_ai_context(config, project):
         modified_time = item['metadata'].get('modifiedTime', 'Unknown').split("T")[0]  # Just the date
 
         flat_file_content += f"=== {file_id} ===\n"
-        flat_file_content += f"Author: {author}\nEditor: {editor}\nModified Time: {modified_time}\n"
+        flat_file_content += f"Author: {author}\nEditor: {editor}\nModified Time: {modified_time}\nType: {mime_type}\n"
         
         if "google-apps.document" in mime_type:
             flat_file_content += f"{content}\n---\n"

@@ -44,7 +44,7 @@ def list_accounts(config):
 # Choose account by number
 def select_account_by_number(config):
     print("Available accounts:")
-    account_names = list(config.keys())
+    account_names = list(config["google"].keys())
     for i, account in enumerate(account_names, 1):
         print(f"{i}. {account}")
     selection = int(input("Enter the number of the account: ")) - 1

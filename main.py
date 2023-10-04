@@ -1,8 +1,13 @@
+from datetime import datetime
+
 from lib.google_drive_api import list_accounts, get_credentials, get_service, select_account_by_number
 from lib.project_manager import load_config, load_projects, save_projects, create_project, set_active_project
 from lib.context_generator import generate_ai_context
 from lib.project_files import list_project_files, search_and_add_files_to_project
 from lib.pdf import text_to_pdf
+
+from lib.s3 import upload_to_s3, load_s3_config, test_s3
+
 
 
 # Main program loop
@@ -22,7 +27,8 @@ if __name__ == '__main__':
         print("5 - List all files in the current project")
         print("6 - Search for files to add to the current project")
         print("7 - Generate AI context from current project")
-        print("8 - Exit")
+        print("8 - Test S3 Upload/Download")
+        print("9 - Exit")
 
         
         choice = input(prompt)
@@ -55,6 +61,9 @@ if __name__ == '__main__':
                 print("No active project. Set a project active first.")
             else:
                 generated_content = generate_ai_context(config, projects[active_project[0]])
+                current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+                random_filename = f"output_{current_time}"
+
 
                 while True:
                     print("\nWhat would you like to do with the generated content?")
@@ -66,26 +75,27 @@ if __name__ == '__main__':
                     
                     sub_choice = input("> ")
                     if sub_choice == "1":
-                        with open("output.txt", "w") as f:
+                        with open(f"{random_filename}.txt", "w") as f:
                             f.write(generated_content)
-                        print("Saved as output.txt.")
+                        print(f"Saved as {random_filename}.txt.")
                     elif sub_choice == "2":
                         pdf_content = text_to_pdf(generated_content)
-                        with open("output.pdf", "wb") as f:
+                        with open(f"{random_filename}.pdf", "wb") as f:
                             f.write(pdf_content)
-                        print("Saved as output.pdf.")
+                        print(f"Saved as {random_filename}.pdf.")
                     elif sub_choice == "3":
-                        upload_to_s3(generated_content, 'txt', config)
-                        print("Uploaded to S3 as txt.")
+                        url = upload_to_s3(generated_content, "text/plain", f"{random_filename}.txt")
+                        print(f"Uploaded to S3 as txt: {url}")
                     elif sub_choice == "4":
                         pdf_content = text_to_pdf(generated_content)
-                        upload_to_s3(pdf_content, 'pdf', config)
-                        print("Uploaded to S3 as pdf.")
+                        url = upload_to_s3(pdf_content, 'application/pdf', f"{random_filename}.pdf")
+                        print(f"Uploaded to S3 as pdf: {url}")
                     elif sub_choice == "5":
                         break
                     else:
                         print("Invalid choice. Try again.")
-
         elif choice == "8":
+            test_s3()
+        elif choice == "9":
             break
 
