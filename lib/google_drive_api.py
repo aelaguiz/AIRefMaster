@@ -62,14 +62,20 @@ def fetch_file_content_and_metadata(file_id, account_name, config, mime_type):
     service = get_service(credentials)
     
     print("Fetching file content and metadata...")
-    additional_metadata = service.files().get(fileId=file_id, fields='modifiedTime,owners,lastModifyingUser').execute()
+    additional_metadata = service.files().get(fileId=file_id, fields='modifiedTime,owners,lastModifyingUser,name').execute()
     
     content = ""
     if "google-apps.document" in mime_type:
+        print("Fetching google doc...")
         content = service.files().export(fileId=file_id, mimeType='text/plain').execute()
         content = content.decode('utf-8')
     elif "google-apps.presentation" in mime_type:
+        print("Fetching google slides...")
         content = service.files().export(fileId=file_id, mimeType='text/plain').execute()
         content = content.decode('utf-8')
-        
+    elif "google-apps.spreadsheet" in mime_type:
+        print("Fetching google sheet...")
+        content = service.files().export(fileId=file_id, mimeType='text/csv').execute()
+        content = content.decode('utf-8')
+
     return additional_metadata, content

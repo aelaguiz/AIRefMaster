@@ -38,15 +38,18 @@ def generate_ai_context(config, project):
         content = item['content']
 
         author = item['metadata'].get('owners', [{}])[0].get('displayName', 'Unknown')
+        name = item['metadata'].get('name', 'Unknown')
         editor = item['metadata'].get('lastModifyingUser', {}).get('displayName', 'Unknown')
         modified_time = item['metadata'].get('modifiedTime', 'Unknown').split("T")[0]  # Just the date
 
         flat_file_content += f"=== {file_id} ===\n"
-        flat_file_content += f"Author: {author}\nEditor: {editor}\nModified Time: {modified_time}\nType: {mime_type}\n"
+        flat_file_content += f"Name: {name}\nAuthor: {author}\nEditor: {editor}\nModified Time: {modified_time}\nType: {mime_type}\n"
         
         if "google-apps.document" in mime_type:
             flat_file_content += f"{content}\n---\n"
         elif "google-apps.presentation" in mime_type:
+            flat_file_content += f"{content}\n---\n"
+        elif "google-apps.spreadsheet" in mime_type:
             flat_file_content += f"{content}\n---\n"
 
     print(flat_file_content)
